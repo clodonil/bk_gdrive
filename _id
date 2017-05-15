@@ -1,0 +1,332 @@
+# coding=UTF-8
+from __future__ import print_function
+import httplib2
+import os
+import datetime
+from apiclient import discovery
+from apiclient.http import MediaFileUpload
+from oauth2client import client
+from oauth2client import tools
+from oauth2client.file import Storage
+from oauth2client.service_account import ServiceAccountCredentials
+import subprocess
+import tarfile
+import yaml
+import sys
+import os
+
+
+class Backup_Magento():
+    def __init__(self):
+        '''
+             Carga dos arquivos de configurcao
+        '''
+        try:
+           with open('config.yaml', 'r') as f:
+               self.params = yaml.load(f)
+        except:
+           self.log('Erro no arquivo de configuracao (config.yaml)')
+           sys.exit(1)
+
+    def backup_mysql(self):
+        '''
+          Backup do banco do mysql
+        '''
+        data     = datetime.datetime.now().strftime("%d-%m-%Y")
+        filename = self.params['backup']['storage'] + 'db_'+self.params['mysql']['database'] +  '.sql'
+        dados = {} 
+        dados['user'] = self.params['mysql']['user']
+        dados['pass'] = self.params['mysql']['passwd']
+        dados['host'] = self.params['mysql']['host']
+        dados['port'] = self.params['mysql']['port']
+        dados['db']   = self.params['mysql']['database']
+        dados['output'] = filename
+   
+        cmd = "mysqldump --user={user} --password={pass} --host={host} --port={port} {db} > {output}".format(**dados)
+        if os.system(cmd) != 0:
+           self.log('Problema no backup do Mysql')
+           return False
+        try:
+           filename_tar = self.params['backup']['storage'] + 'db_'+self.params['mysql']['database'] + '.tar.gz'
+           tar = tarfile.open(filename_tar, "w:gz")
+           tar.add(filename)
+           tar.close()
+           os.remove(filename)
+           return filename_tar
+        except:
+           self.log('Problema com a compactacao do backup do Mysql')
+           return False
+
+    def backup_magento(self):
+        '''
+          Backup da pasta do magento, considerando que esta na maquina local
+        '''
+        data     = datetime.datetime.now().strftime("%d-%m-%Y")
+        filename = self.params['backup']['storage'] + 'magento-' +  data + '.tar.gz'
+        path     = self.params['magento']['path']
+        try:
+           tar = tarfile.open(filename, "w:gz")
+           tar.add(path)
+           tar.close()
+           return filename
+        except:
+           self.log('Erro ao realizar a compactacao do magento')
+           return False
+
+    def delete_file(self,service,file_id,filename):
+        '''
+          Deleta os arquivos localmente e remotamente
+          file_id == 1 apaga o arquivo mais velho
+        '''
+        if file_id != 1:
+           try:
+               service.files().delete(file_id=file_id).execute()
+           except errors.HttpError, error:
+               self.log('An error occurred: %s' % error)
+               return False
+
+        return True
+
+    def gdrive_connect(self):
+        '''
+          Conecta no servico do google drive
+        '''
+        KEY_FILE_NAME = self.params['admin']['secret_google']
+        SCOPES = 'https://www.googleapis.com/auth/drive'
+        try:
+           credentials = ServiceAccountCredentials.from_json_keyfile_name(filename=KEY_FILE_NAME, scopes=SCOPES)
+           http        = credentials.authorize(httplib2.Http())
+           service     = discovery.build(serviceName="drive", version="v3", credentials=credentials)
+           return service
+        except:
+           self.log('error ao conectar no google')
+           return False
+
+
+
+    def gdrive_list_file(self):
+        '''
+           Retorna a quantidade de arquivos no google
+           sendo o primeiro do mysql e segundo do magento
+        '''
+        query_magento="name contains 'teste'"
+        query_mysql  ="name contains 'teste'"
+        service = self.gdrive_connect()
+
+        tmp = service.files().list(q=query_magento,pageSize=10,fields="nextPageToken, files(id, name)").execute()
+        files_magento = tmp.get('files', [])
+
+        tmp = service.files().list(q=query_mysql,pageSize=10,fields="nextPageToken, files(id, name)").execute()
+        files_mysql = tmp.get('files', [])
+
+
+        n_files_magento  = len(files_magento) 
+        n_files_mysql    = len(files_mysql)
+        files = [n_files_magento, n_files_mysql]
+
+        return files
+   
+    def coletor_lixo(self):
+        '''
+           Lista os arquivos temporarios ou mantem localmente
+        '''    
+        pass 
+    def check_limit_file(self):
+        '''
+            Verifica o numero máximo de arquivos armazenado
+        '''
+        max_file_magento = self.params['backup']['magento']
+        max_file_mysql   = self.params['backup']['mysql']
+
+        (gdrive_myfile,gdrive_magfile) = self.gdrive_list_file()
+
+        if gdrive_myfile > max_file_mysql and gdrive_magfile > max_file_magento:
+           return self.delete_file()
+        
+        return True  
+     
+
+    def create_dir(self,service,  name):
+        '''
+           Cria o diretorio para os arquivos
+        '''
+        folder_metadata = {
+           'name' : name,
+           'mimeType' : 'application/vnd.google-apps.folder'
+        }
+        #folder = service.files().create(body=folder_metadata, fields='id, name').execute()
+        #folderID = folder.get('id')
+        #return folderID
+
+
+        path = name
+        folder_query = ""
+        #folder_query = "title = '%s' and mimeType = '%s'" % (path,"application/vnd.google-apps.folder")
+        #folder_query = "name contains '%s'"%(path)
+        print(folder_query)
+        #tmp         = service.files().list(q=query_mysql,pageSize=10,fields="nextPageToken, files(id, name)").execute()
+        #folder_list = service.files().list(q=folder_query,fields="nextPageToken, files(id, name)").execute()
+        folder_list = service.files().list(q=folder_query).execute()
+        #folder_id = folder_list['items'][0]['id']
+        folder_id = folder_list.get('files',[])
+      
+        print("ID folder")
+        for k in folder_id:
+             mime = k['mimeType'] 
+             id = k['id']
+             name = k['name']
+             print("Nome: {0} \t Mime: {1} \t ID: {2}".format(name,mime,id))
+             self.delete_file(service,id,name)
+           
+
+
+
+    def compartilhar(self,service, fileID):
+        '''
+           compartilhar o arquivo enviado
+        '''
+        email = self.params['admin']['email']
+        batch = service.new_batch_http_request(callback=callback)
+        user_permission = {
+            'type': 'user',
+            'role': 'writer',
+            'emailAddress': email
+        }
+        batch.add(service.permissions().create(
+             fileId=fileID,
+             body=user_permission,
+             fields='id',
+        ))
+        batch.execute()
+
+
+    def upload(self,filename):
+        '''
+          Upload dos arquivos para o gdrive
+        '''
+        dir = self.params['admin']['gdrive_dir']    
+
+        service = self.gdrive_connect()
+        folder_dir  = self.create_dir(service,dir)
+        print(folder_dir)
+
+        file_metadata = {
+             'name' : filename,
+             'parents': [ folder_dir ]
+        }
+        media = MediaFileUpload(filename, resumable=True)
+        file = service.files().create(body=file_metadata, media_body=media, fields='name,id').execute()
+        fileID = file.get('id')
+        self.compartilhar(service,fileID)
+
+        return True
+
+
+
+    def log(self,msg):
+        print(msg)
+
+
+######################################################################################## 
+
+def callback(request_id, response, exception):
+    if exception:
+        # Handle error
+        print(exception)
+    else:
+        print("Permission Id: %s" % response.get('id'))
+
+def createNewFolder(service,  name):
+    """Will create a new folder in the root of the supplied GDrive, 
+    doesn't check if a folder with same name already exists.
+    Retruns:
+        The id of the newly created folder
+    """
+    #folder_metadata = {
+    #    'name' : name,
+    #    'mimeType' : 'application/vnd.google-apps.folder'
+    #}
+    #folder = service.files().create(body=folder_metadata, fields='id, name').execute()
+    #print('Folder Creation Complete')
+    #folderID = folder.get('id')
+
+    path = name
+    folder_query = "title = '%s' and mimeType = '%s'" % (path,
+                                                    "application/vnd.google-apps.folder")
+    folder_list = drive_service.files().list(q=folder_query).execute()
+    folder_id = folder_list['items'][0]['id']
+    print(folder_id)
+
+
+
+def shareFileWithEmail(service, fileID, emailAddress):
+    """Shares the specified file via email
+    Grants 'writer' privileges by default, which allows
+    one to delete the contents of the folder, but not the folder itself
+    """
+    print("Sharing file with email: "+emailAddress)
+    batch = service.new_batch_http_request(callback=callback)
+    user_permission = {
+        'type': 'user',
+        'role': 'writer',
+        'emailAddress': emailAddress
+    }
+    batch.add(service.permissions().create(
+        fileId=fileID,
+        body=user_permission,
+        fields='id',
+    ))
+    batch.execute()
+    print("Sharing complete!\n")
+
+def uploadFileToFolder(service, folderID, fileName):
+    """Uploads the file to the specified folder id on the said Google Drive
+    Returns:
+            fileID, A string of the ID from the uploaded file
+    """
+    file_metadata = None
+    if folderID is None:
+        file_metadata = {
+            'name' : fileName
+        }
+    else:
+	    print("Uploading file to: "+folderID)
+	    file_metadata = {
+      		'name' : fileName,
+      		'parents': [ folderID ]
+	    }
+
+    media = MediaFileUpload(fileName, resumable=True)
+    file = service.files().create(body=file_metadata, media_body=media, fields='name,id').execute()
+    fileID = file.get('id')
+    print('File ID: %s ' % fileID)
+    print('File Name: %s \n' % file.get('name'))
+
+    return fileID
+
+def uploadFile(service, fileName):
+    """Uploads the file to the root directory on the said Google Drive
+    Returns:
+            fileID, A string of the ID from the uploaded file
+    """
+    return uploadFileToFolder(service=service, folderID=None, fileName=fileName)
+
+
+def main():
+    print("This is an example script for working with a Google Drive API service account\n")
+    
+    #get the service object using the credentials file
+    service = get_service()
+    
+    #creates a new folder
+    folderID = createNewFolder(service=service,name=GDRIVE_FOLDER_NAME)
+
+    #uploads a file to the specified GDrive folder
+    uploadFileToFolder(service=service, folderID=folderID, fileName=FILE_NAME)
+    
+    #shares the folder via email to said recipient
+    shareFileWithEmail(service=service, fileID=folderID, emailAddress='sunblack1978@gmail.com')
+
+    #print("Requested operations complete. Exiting...\n")
+
+

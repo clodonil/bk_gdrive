@@ -1,0 +1,22 @@
+admin:
+   email: email@localhost
+   secret_google: secrets.json
+   gdrive_dir: Magento-Backup
+   log: logs/backupMagento.log
+mysql:
+   host: localhost
+   user: root
+   passwd: magento
+   database: magento
+   port: 3306
+magento:
+   ssh_host: localhost 
+   ssh_user:
+   ssh_pass:
+   ssh_port:
+   path: /var/www/html/
+backup:
+   mysql_rotation: 10 
+   magento_rotation: 10
+   storage_local: True
+   storage: storage/
