@@ -105,3 +105,5 @@ ENV/
 # End of https://www.gitignore.io/api/python
 config.yaml
 secrets.json
+__pycache__/*
+env/*
