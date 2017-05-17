@@ -128,10 +128,10 @@ class Backup_Magento():
         query_magento="name contains 'sys_'"
         query_mysql  ="name contains 'db_'"
 
-        tmp = service.files().list(q=query_magento, fields="files(id, name)").execute()
+        tmp = service.files().list(q=query_magento, orderBy='name',fields="files(id, name)").execute()
         files_magento = tmp.get('files', [])
 
-        tmp = service.files().list(q=query_mysql, fields="files(id, name)").execute()
+        tmp = service.files().list(q=query_mysql, orderBy='name',fields="files(id, name)").execute()
         files_mysql = tmp.get('files', [])
 
 
@@ -140,11 +140,11 @@ class Backup_Magento():
         files = [n_files_magento, n_files_mysql,files_magento,files_mysql]
 
         return files
-   
+
     def coletor_lixo(self):
         '''
-           Lista os arquivos temporarios ou mantem localmente
-        '''    
+           Limpa os arquivos temporarios, limpa os arquivo excedentes
+        '''
         if self.params['backup']['storage_local'] == False:
            for f_file in glob.glob(self.params['backup']['storage']+"*"):
                try:
@@ -152,11 +152,11 @@ class Backup_Magento():
                except:
                   self.log('Erro ao apagar arquivos temporarios')
 
-        
+
         # Verificando se o numero maximo de arquivo foi criado
         self.check_limit_file()
 
-      
+
         # Deletando arquivos temporarios  
         try:
            os.remove(self.params['backup']['storage']+"*.sql")
@@ -177,32 +177,29 @@ class Backup_Magento():
         (gdrive_myfile,gdrive_magfile,f_magento,f_mysql) = self.gdrive_list_file(service)
 
         # Verifica a quant de arquivos mysql
-        if gdrive_myfile >  max_file_mysql: 
-           for gfile in f_magento:         
-               #deletando arquivo gdrive
-               self.delete_file(service, gfile['id'],gfile['name'])
-               # Apagando o arquivo local
-               try:
-                  os.remove(self.params['backup']['storage'] + gfile['name'])
-               except:
-                  self.log("erro ao apagar arquivo: {0}".format(gfile['name']))
-        
+        if gdrive_myfile >  max_file_mysql:
+           gfile = f_magento[0] 
+           #deletando arquivo gdrive
+           self.delete_file(service, gfile['id'],gfile['name'])
+           # Apagando o arquivo local
+           try:
+              os.remove(self.params['backup']['storage'] + gfile['name'])
+           except:
+             self.log("erro ao apagar arquivo: {0}".format(gfile['name']))
+
         #Verifica a quant de arquivos magent
         if gdrive_magfile > max_file_magento:
-           for gfile in f_mysql:
-               #deletando arquivo gdrive
-               self.delete_file(service, gfile['id'],gfile['name'])
-               # Apagando o arquivo local
-               try:
-                  os.remove(self.params['backup']['storage'] + gfile['name'])
-               except:
-                  self.log("erro ao apagar arquivo: {0}".format(gfile['name']))
+           gfile = f_mysql[0]
+           #deletando arquivo gdrive
+           self.delete_file(service, gfile['id'],gfile['name'])
+           # Apagando o arquivo local
+           try:
+              os.remove(self.params['backup']['storage'] + gfile['name'])
+           except:
+              self.log("erro ao apagar arquivo: {0}".format(gfile['name']))
 
+        return True
 
-
-        
-        return True  
-     
 
     def create_dir(self,service,  name):
         '''

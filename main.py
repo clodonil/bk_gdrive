@@ -18,7 +18,7 @@ mysql_file   = local.backup_mysql()
 if mysql_file != False:
    local.upload(mysql_file)
 
-magento_file = local.backup_magento()
+###magento_file = local.backup_magento()
 if magento_file != False:
    local.upload(magento_file)
 
