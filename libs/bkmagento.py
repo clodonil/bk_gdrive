@@ -29,20 +29,22 @@ class Backup_Magento():
         except:
            self.log('Erro no arquivo de configuracao (config.yaml)')
            sys.exit(1)
-        self.logger = logging.getLogger(self.params['admin']['log'])
-        self.logger.setLevel(logging.DEBUG)
 
-        # create console handler and set level to debug
-        ch = logging.StreamHandler()
-        ch.setLevel(logging.DEBUG)
+        #logs
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.INFO)
 
-        # create formatter
+        # create a file handler
+        handler = logging.FileHandler(self.params['admin']['log'])
+        handler.setLevel(logging.INFO)
+
+        # create a logging format
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        # add formatter to ch
-        ch.setFormatter(formatter)
+        handler.setFormatter(formatter)
 
-        # add ch to logger
-        self.logger.addHandler(ch)
+        # add the handlers to the logger
+        self.logger.addHandler(handler)
+
         self.log('backup Inicializado')
 
     def backup_mysql(self):
@@ -174,13 +176,14 @@ class Backup_Magento():
 
         service = self.gdrive_connect()
 
-        (gdrive_myfile,gdrive_magfile,f_magento,f_mysql) = self.gdrive_list_file(service)
-
+        (gdrive_magfile,gdrive_myfile,f_magento,f_mysql) = self.gdrive_list_file(service)
+        
         # Verifica a quant de arquivos mysql
-        if gdrive_myfile >  max_file_mysql:
-           gfile = f_magento[0] 
+        if gdrive_myfile > max_file_mysql:
+           gfile = f_mysql[0] 
            #deletando arquivo gdrive
            self.delete_file(service, gfile['id'],gfile['name'])
+           self.log("apagando o arquivo {0} no gdrive".format(gfile['name']))
            # Apagando o arquivo local
            try:
               os.remove(self.params['backup']['storage'] + gfile['name'])
@@ -189,7 +192,7 @@ class Backup_Magento():
 
         #Verifica a quant de arquivos magent
         if gdrive_magfile > max_file_magento:
-           gfile = f_mysql[0]
+           gfile = f_magento[0]
            #deletando arquivo gdrive
            self.delete_file(service, gfile['id'],gfile['name'])
            # Apagando o arquivo local
@@ -272,6 +275,6 @@ class Backup_Magento():
 
 
     def log(self,msg):
-        self.logger.debug(msg)
+        self.logger.info(msg)
 
 
