@@ -1,8 +1,8 @@
-ckup do Magento em Google Drive
+# Backup do Magento em Google Drive
 
 Esse script foi escrito para resolver um problema pessoal de backup automatizado no google Driver. Fique a vontade para reportar problemas ou melhora-ló
 
-[![Screen Shot](master/imagens/tela1.PNG)](https://raw.githubusercontent.com/clodonil/bk_magento_gdrive/)
+[![Screen Shot](bkmagento1.jpg)](http://www.devops-sys.com.br/screenshot/)
 
 ## Instalação
 A instalação do script é bastante simples. Primeiramente clone o projeto do github:
@@ -20,7 +20,9 @@ $ pip install -f requirements
 
 É necessário criar uma conta de serviço no google para permitir autenticação do script e fazer o upload dos arquivos.
 Os seguintes passos vão te ajudar nesse processo:
-
+[![Screen Shot](bkmagento2.jpg)](https://www.devops-sys.com.br/screenshot/)
+[![Screen Shot](bkmagento3.jpg)](https://www.devops-sys.com.br/screenshot/)
+[![Screen Shot](bkmagento4.jpg)](https://www.devops-sys.com.br/screenshot/bkmagento4.jpg)
 * Faça autenticação no [Google API](https://console.developers.google.com/apis/library). 
 * Na aba "Credentials", crie um nova Credencial, conforme
 Part of Editor is depend on [CodeMirror](http://codemirror.net/).It enabeles
