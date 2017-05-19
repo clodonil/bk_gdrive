@@ -1,16 +1,28 @@
-# Backup do Magento em Google Drive
+ckup do Magento em Google Drive
 
-This help you to edit markdown document with the power of web technology.
+Esse script foi escrito para resolver um problema pessoal de backup automatizado no google Driver. Fique a vontade para reportar problemas ou melhora-ló
 
-[![Screen Shot](images/ScreenShot.png)](http://georgeosddev.github.com/markdown-edit)
+[![Screen Shot](master/imagens/tela1.PNG)](https://raw.githubusercontent.com/clodonil/bk_magento_gdrive/)
 
 ## Instalação
+A instalação do script é bastante simples. Primeiramente clone o projeto do github:
 
-Try on [Demo](http://georgeosddev.github.com/markdown-edit) page.<br>
-Or Install on your local PC. Check [Guide](#on-your-local-pc) to how to install.
+```bash
+$ git clone https://github.com/clodonil/bk_magento_gdrive/
+```
+Entre no diretório criado e instale as dependências:
+```bash
+$ cd bk_magento_gdrive/
+$ pip install -f requirements
+```
 
 ## Criar a conta de Serviço do Google
 
+É necessário criar uma conta de serviço no google para permitir autenticação do script e fazer o upload dos arquivos.
+Os seguintes passos vão te ajudar nesse processo:
+
+* Faça autenticação no [Google API](https://console.developers.google.com/apis/library). 
+* Na aba "Credentials", crie um nova Credencial, conforme
 Part of Editor is depend on [CodeMirror](http://codemirror.net/).It enabeles
 
 * Display **line number**.
@@ -82,4 +94,3 @@ Source code can be found on [github](https://github.com/georgeOsdDev/markdown-ed
 
 Developed by [clodonil Trigo](http://devops-sys.com.br)
 
-    
