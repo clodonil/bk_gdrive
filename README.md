@@ -2,7 +2,7 @@
 
 Esse script foi escrito para resolver um problema pessoal de backup automatizado no google Driver. Fique a vontade para reportar problemas ou melhora-ló
 
-[![Screen Shot](bkmagento1.jpg)](http://www.devops-sys.com.br/screenshot/)
+[![Screen Shot](bkmagento1.jpg)](http://www.devops-sys.com.br/screenshot/bkmagento1.jpg)
 
 ## Instalação
 A instalação do script é bastante simples. Primeiramente clone o projeto do github:
