@@ -24,11 +24,12 @@ class Backup_Magento():
              Carga dos arquivos de configurcao
         '''
         try:
-           with open('config.yaml', 'r') as f:
+          with open('config.yaml', 'r') as f:
                self.params = yaml.load(f)
         except:
-           self.log('Erro no arquivo de configuracao (config.yaml)')
-           sys.exit(1)
+               print('Erro no arquivo de configuracao (config.yaml)')
+               sys.exit(1)
+
 
         #logs
         self.logger = logging.getLogger(__name__)
@@ -45,7 +46,23 @@ class Backup_Magento():
         # add the handlers to the logger
         self.logger.addHandler(handler)
 
+
+        # criando os diretorios
+        self.checkdir()
+
         self.log('backup Inicializado')
+
+
+    def check_dir(self)
+    '''
+        Verifica se o diretorios basicos existem
+    '''
+    dirs = []
+    dirs.append(self.params['admin']['log'])
+    dirs.append(self.params['admin']['storage'])
+    for dir in dirs:
+        if not os.path.exists(dir):
+           os.makedirs(dir)
 
     def backup_mysql(self):
         '''
