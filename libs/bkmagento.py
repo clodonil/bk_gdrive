@@ -30,6 +30,9 @@ class Backup_Magento():
                print('Erro no arquivo de configuracao (config.yaml)')
                sys.exit(1)
 
+        # criando os diretorios
+        self.checkdir()
+
 
         #logs
         self.logger = logging.getLogger(__name__)
@@ -47,22 +50,23 @@ class Backup_Magento():
         self.logger.addHandler(handler)
 
 
-        # criando os diretorios
-        self.checkdir()
-
         self.log('backup Inicializado')
 
 
-    def check_dir(self)
-    '''
-        Verifica se o diretorios basicos existem
-    '''
-    dirs = []
-    dirs.append(self.params['admin']['log'])
-    dirs.append(self.params['admin']['storage'])
-    for dir in dirs:
-        if not os.path.exists(dir):
-           os.makedirs(dir)
+    def checkdir(self):
+        '''
+          Verifica se o diretorios basicos existem
+        '''
+        dirs = []
+        dirs.append(self.params['admin']['log'].split("/")[0])
+        dirs.append(self.params['backup']['storage'])
+        for dir in dirs:
+            if not os.path.exists(dir):
+               os.makedirs(dir)
+
+        if not os.path.exists(self.params['admin']['secret_google']):
+            print("Arquivo do json do google não encontrado.")
+            sys.exit(1)
 
     def backup_mysql(self):
         '''
