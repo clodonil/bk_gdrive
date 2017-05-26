@@ -1,6 +1,8 @@
-# Backup do Magento em Google Drive
+ckup do Magento em Google Drive
 
-Esse script foi escrito para resolver um problema pessoal de backup automatizado no google Driver. Fique a vontade para reportar problemas ou melhora-ló
+Esse script foi escrito para resolver um problema pessoal de backup automatizado no google Driver. Fique a vontade para reportar problemas ou melhorá-lo.
+Basicamente o script faz a compactação dos arquivos de banco de dados e do sistema e envia para o gdrive. Também existe a possibilidade de manter o backup local. 
+O script controla/rotaciona a quantidade de arquivos de backup.
 
 [![Screen Shot](http://www.devops-sys.com.br/screenshot/bkmagento1.jpg)](http://www.devops-sys.com.br/screenshot/bkmagento1.jpg)
 
@@ -13,35 +15,29 @@ $ git clone https://github.com/clodonil/bk_magento_gdrive/
 Entre no diretório criado e instale as dependências:
 ```bash
 $ cd bk_magento_gdrive/
-$ pip install -f requirements
+$ pip install -r requirements
 ```
 
 ## Criar a conta de Serviço do Google
 
 É necessário criar uma conta de serviço no google para permitir autenticação do script e fazer o upload dos arquivos.
 Os seguintes passos vão te ajudar nesse processo:
-
-
+1. Faça autenticação no [Google API](https://console.developers.google.com/apis/library).
 [![Screen Shot](http://www.devops-sys.com.br/screenshot/bkmagento2.jpg)](http://www.devops-sys.com.br/screenshot/bkmagento2.jpg)
+
+2.  Na opção "Credentials" crie um novo projeto e as credenciais;
 [![Screen Shot](http://www.devops-sys.com.br/screenshot/bkmagento3.jpg)](http://www.devops-sys.com.br/screenshot/bkmagento3.jpg)
+3.  Escolha a opção de "Service Account Key" e faça download do arquivo json.
+4.  Habilite o Google Drive Api
+
 [![Screen Shot](http://www.devops-sys.com.br/screenshot/bkmagento4.jpg)](http://www.devops-sys.com.br/screenshot/bkmagento4.jpg)
 
-* Faça autenticação no [Google API](https://console.developers.google.com/apis/library). 
-* Na aba "Credentials", crie um nova Credencial, conforme
-Part of Editor is depend on [CodeMirror](http://codemirror.net/).It enabeles
-
-* Display **line number**.
-* **Match Brackets** in the document.
-* Visible `Tab` key
-* **Highlight syntax** of markdown.
-* **Drag and Drop** file read.
-
-For more option, see [programming API](http://codemirror.net/doc/manual.html) of CodeMirror, and Hack [Markdown Edit](http://github.com/georgeosddev/markdown-edit)
 
 ### config.yaml
+Antes de executar o script, ajuste o arquivo de configuração.
 ```yaml
 admin:
-   email: email@localhost
+   email: email@localhost 
    secret_google: secrets.json
    gdrive_dir: Magento-Backup
    log: logs/backupMagento.log
@@ -52,47 +48,35 @@ mysql:
    database: magento
    port: 3306
 magento:
-   ssh_host: localhost
-   ssh_user:
-   ssh_pass:
-   ssh_port:
    path: /var/www/html/
 backup:
    mysql_rotation: 10
    magento_rotation: 10
    storage_local: True
    storage: storage/
-
 ```
+As principais linhas de configuração são:
+  * **email**: *E-Mail que vai ter acesso aos arquivos de backup* 
+  * **secret_google**: *Nome do arquivo json criado no google Api*
+  * **gdrive_dir**: *Nome da pasta criado no google para armazenar os backups*
+  * **log**: *log da aplicação*
+  * **path**: *Diretório do armazenamento do magento*
+  * **mysql_rotation**: *Quantidade de arquivos mantidos de Mysql*
+  * **magento_rotation**: *Quantidade de arquivos mantidos de magento*
+  * **storage_local**: *True para manter o backup local ou False para manter apenas no google*
+  * **storage**: *Diretório para manter os backups locais*
 
 
 ### Crontab
-To display converted HTML like Github, Markdown-Edit apply github.css from highlight.js and github-style.css inspired by [gollum](https://github.com/gollum/gollum/blob/master/lib/gollum/public/gollum/css/template.css).
-
+Para o backup ser automatizado adicione as seguintes linhas no crontab
 ```html
-<link rel="stylesheet" href="bower_components/highlightjs/styles/github.css">
-<link rel="stylesheet" href="css/github-style.css">
+# Backup diário do mysql
+0 5  * * *  /opt/bk_magento/main.py "mysql"
+# Backup semanal do Magento
+0 5 1  * * /opt/bk_magento/main.py "magento"
+# Backup diário do Mysql e Magento
+0 5 * * * /opt/bk_magento/main.py 
 ```
-
-If you want to see raw html what [Github's API](http://developer.github.com/v3/markdown/#render-a-markdown-document-in-raw-mode) responsed, click `Raw .html` button on navbar.
-
-## Getting Started
-
-### Install On your local PC
-
-#### Download Sources
-
-use git
-
-```bash
-git clone http://github.com/georegeosddev/markdown-edit.git
-```
-
-Or download from [Here](https://github.com/georgeOsdDev/markdown-edit/zipball/master)
-
-
-
-
 ## Licence
 
 Source code can be found on [github](https://github.com/georgeOsdDev/markdown-edit), licenced under [MIT](http://opensource.org/licenses/mit-license.php).
