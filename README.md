@@ -73,11 +73,11 @@ As principais linhas de configuração são:
 Para o backup ser automatizado adicione as seguintes linhas no crontab
 ```html
 # Backup diário do mysql
-0 5  * * *  /opt/bk_magento/main.py "mysql"
+0 5  * * *  /opt/bk_magento/main.py --mysql
 # Backup semanal do Magento
-0 5 1  * * /opt/bk_magento/main.py "magento"
+0 5 1  * * /opt/bk_magento/main.py --magento
 # Backup diário do Mysql e Magento
-0 5 * * * /opt/bk_magento/main.py 
+0 5 * * * /opt/bk_magento/main.py --mysql --magento
 ```
 ## Licence
 
