@@ -8,17 +8,17 @@ import argparse
 
 
 # Carga de parametros
-parser = argparse.ArgumentParser(description = 'Script de Backup do Magento no GDrive.')
-parser.add_argument('--magento', action='store_true', dest = 'magento',
+def params():
+    parser = argparse.ArgumentParser(description = 'Script de Backup do Magento no GDrive.')
+    parser.add_argument('--magento', action='store_true', dest = 'magento',
                                                    default = False, required = False,
                                                    help = 'Coloque essa opcao para fazer backup do magento.')
 
-
-parser.add_argument('--mysql', action='store_true', dest = 'mysql',
+    parser.add_argument('--mysql', action='store_true', dest = 'mysql',
                                                    default = False, required = False,
                                                    help = 'Coloque essa opcao para fazer backup do Mysql.')
 
-args = parser.parse_args()
+    return parser.parse_args()
 
 def main(args):
     '''
@@ -49,5 +49,8 @@ def main(args):
     return True
 
 if __name__ == "__main__":
+    args=params()
     if not main(args):
+    # if not main(params())
         print("problema na execucao do script, verifique os logs")
+        sys.exit(-1)
