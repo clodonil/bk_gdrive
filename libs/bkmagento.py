@@ -120,9 +120,7 @@ class Backup_Magento():
            service.files().delete(fileId=f_id).execute()
            os.remove(self.params['backup']['storage']+filename)
         except:
-           self.log("Erro ao apagar arquivos")
-           return False
-
+            self.log("Limpando arquivos Temp")
         self.log("Arquivo deletado: {0}".format(filename))
         return True
 
@@ -141,7 +139,26 @@ class Backup_Magento():
            self.log('error ao conectar no google')
            return False
 
+    def lista(self):
+        ''' 
+           lista a quantidade de arquivos e os arquivos armazenados
+        '''
+        service = self.gdrive_connect() 
+        try:
+            status = open(self.params['admin']['list_file'],'w')
+            (gdrive_magfile,gdrive_myfile,f_magento,f_mysql) = self.gdrive_list_file(service)
+            status.write("{0}\n".format("-"*100))
+            status.write("\tLISTA DE ARQUIVOS DE BACKUP\n")
+            status.write("{0}\n".format("-"*100))
+            for files in f_magento:
+                status.write("\t{0}\n".format(files['name']))
 
+            for files in f_mysql:
+                status.write("\t{0}\n".format(files['name']))
+            status.write("{0}\n".format("-"*100))
+            self.log("Lista de arquivos criado: {0}".format(self.params['admin']['list_file']))
+        except:
+            self.log("Erro ao criar lista de arquivos")
 
     def gdrive_list_file(self,service):
         '''
@@ -187,6 +204,7 @@ class Backup_Magento():
            self.log('Erro ao apagar arquivos tmp *.sql')
 
         self.log('backup Finalizado')
+
     def check_limit_file(self):
         '''
             Verifica o numero máximo de arquivos armazenado
@@ -197,58 +215,66 @@ class Backup_Magento():
 
         service = self.gdrive_connect()
 
-        (gdrive_magfile,gdrive_myfile,f_magento,f_mysql) = self.gdrive_list_file(service)
+        # Verifica se conectou no google
+        if service:
+           (gdrive_magfile,gdrive_myfile,f_magento,f_mysql) = self.gdrive_list_file(service)
         
-        # Verifica a quant de arquivos mysql
-        if gdrive_myfile > max_file_mysql:
-           gfile = f_mysql[0] 
-           #deletando arquivo gdrive
-           self.delete_file(service, gfile['id'],gfile['name'])
-           self.log("apagando o arquivo {0} no gdrive".format(gfile['name']))
-           # Apagando o arquivo local
-           try:
-              os.remove(self.params['backup']['storage'] + gfile['name'])
-           except:
-             self.log("erro ao apagar arquivo: {0}".format(gfile['name']))
+           # Verifica a quant de arquivos mysql
+           if gdrive_myfile > max_file_mysql:
+              gfile = f_mysql[0] 
+              #deletando arquivo gdrive
+              self.delete_file(service, gfile['id'],gfile['name'])
+              self.log("apagando o arquivo {0} no gdrive".format(gfile['name']))
+              # Apagando o arquivo local
+              try:
+                 os.remove(self.params['backup']['storage'] + gfile['name'])
+              except:
+                 self.log("erro ao apagar arquivo: {0}".format(gfile['name']))
 
-        #Verifica a quant de arquivos magent
-        if gdrive_magfile > max_file_magento:
-           gfile = f_magento[0]
-           #deletando arquivo gdrive
-           self.delete_file(service, gfile['id'],gfile['name'])
-           # Apagando o arquivo local
-           try:
-              os.remove(self.params['backup']['storage'] + gfile['name'])
-           except:
-              self.log("erro ao apagar arquivo: {0}".format(gfile['name']))
+           #Verifica a quant de arquivos magent
+           if gdrive_magfile > max_file_magento:
+              gfile = f_magento[0]
+              #deletando arquivo gdrive
+              self.delete_file(service, gfile['id'],gfile['name'])
+              # Apagando o arquivo local
+              try:
+                os.remove(self.params['backup']['storage'] + gfile['name'])
+              except:
+                self.log("erro ao apagar arquivo: {0}".format(gfile['name']))
 
-        return True
+           return True
+        else:
+           return False
 
 
     def create_dir(self,service,  name):
         '''
            Cria o diretorio para os arquivos
         '''
+        self.log("Check da pasta pasta {0}".format(name))
+
         folder_metadata = {
            'name' : name,
            'mimeType' : 'application/vnd.google-apps.folder'
         }
 
-        # Pesquisando se a pasta ja existe
-        folder_query = "name contains '%s' and mimeType = '%s'" % (name,"application/vnd.google-apps.folder")
-        folder_list  = service.files().list(q=folder_query).execute()
-        folder_ret   = folder_list.get('files',[])
+        try:
+           # Pesquisando se a pasta ja existe
+           folder_query = "name contains '%s' and mimeType = '%s'" % (name,"application/vnd.google-apps.folder")
+           folder_list  = service.files().list(q=folder_query).execute()
+           folder_ret   = folder_list.get('files',[])
       
-        if len(folder_ret) > 0 :
-           folder_id = folder_ret[0]['id']
-           return folder_id
-        else:
-           self.log('Criando pasta')
-           folder = service.files().create(body=folder_metadata, fields='id, name').execute()
-           folderID = folder.get('id')
-           self.compartilhar(service,folderID)
+           if len(folder_ret) > 0 :
+              folderID = folder_ret[0]['id']
+           else:
+               self.log('Criando pasta')
+               folder = service.files().create(body=folder_metadata, fields='id, name').execute()
+               folderID = folder.get('id')
+               self.compartilhar(service,folderID)
            return folderID
-
+        except:
+            self.log("Erro ao criar pasta")
+            return False
 
 
 
@@ -256,42 +282,59 @@ class Backup_Magento():
         '''
            compartilhar o arquivo enviado
         '''
+        self.log("Compartilhando arquivo {0}".format(fileID))
         email = self.params['admin']['email']
-        batch = service.new_batch_http_request(callback=callback)
+        #try:
+        batch = service.new_batch_http_request(callback=self.callback)
+            #batch = service.new_batch_http_request()
         user_permission = {
-            'type': 'user',
-            'role': 'writer',
-            'emailAddress': email
+                'type': 'user',
+                'role': 'writer',
+                'emailAddress': email
         }
         batch.add(service.permissions().create(
-             fileId=fileID,
-             body=user_permission,
-             fields='id',
+               fileId=fileID,
+               body=user_permission,
+               fields='id',
         ))
         batch.execute()
+        #except:
+        #    self.log("Erro ao compartilhar o arquivo")
+
+    def callback(self,request_id, response, exception):
+        if exception:
+           # Handle error
+           self.log(exception)
+        else:
+            self.log("Permissao Id: %s" % response.get('id'))
 
 
     def upload(self,filename):
         '''
           Upload dos arquivos para o gdrive
         '''
+        self.log("Upload do arquivo {0}".format(filename))
         dir = self.params['admin']['gdrive_dir']    
+        try:
+           service = self.gdrive_connect()
+           folder_dir  = self.create_dir(service,dir)
 
-        service = self.gdrive_connect()
-        folder_dir  = self.create_dir(service,dir)
+           if folder_dir != False:
 
-        arq = filename.split("/")[-1]
+                arq = filename.split("/")[-1]
 
-        file_metadata = {
-             'name' : arq,
-             'parents': [ folder_dir ]
-        }
-        media = MediaFileUpload(filename, resumable=True)
-        file = service.files().create(body=file_metadata, media_body=media, fields='name,id').execute()
-        fileID = file.get('id')
-#        self.compartilhar(service,fileID)
-
-        return True
+                file_metadata = {
+                      'name' : arq,
+                      'parents': [ folder_dir ]
+                }
+                media = MediaFileUpload(filename, resumable=True)
+                file = service.files().create(body=file_metadata, media_body=media, fields='name,id').execute()
+                fileID = file.get('id')
+                #self.compartilhar(service,fileID)
+                return True
+        except:
+            self.log("Problema no upload do arquivo")
+        return False
 
 
 

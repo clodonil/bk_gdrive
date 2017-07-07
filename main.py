@@ -18,7 +18,17 @@ def params():
                                                    default = False, required = False,
                                                    help = 'Coloque essa opcao para fazer backup do Mysql.')
 
-    return parser.parse_args()
+    parser.add_argument('--lista', action='store_true', dest = 'lista',
+                                                   default = False, required = False,
+                                                   help = 'Lista os arquivos armazenados.')
+    args = parser.parse_args()
+
+    # Verificar se um parametro pelo menos foi passado
+    if not args.lista and not args.magento and not args.mysql:
+       parser.print_help()
+       sys.exit(1)
+
+    return args    
 
 def main(args):
     '''
@@ -26,31 +36,39 @@ def main(args):
     '''
     local    = Backup_Magento()
 
-    # Verifica se chegou no numero limite de arquivos para backup
-    if not local.check_limit_file():
-       print('Espaco para backup indefinido...')
-       return false
+    # lista todos os arquivos
+    if args.lista:
+        #listando todos os arquivos
+        local.lista()
 
-    # Backup dos arquivos
-    if args.mysql:
-       mysql_file   = local.backup_mysql()
-       # upload dos novos backups
-       if not mysql_file:
-          local.upload(mysql_file)
+    else:
+       # Verifica se chegou no numero limite de arquivos para backup
+       if not local.check_limit_file():
+          local.log('Espaco para backup indefinido...')
+          return False
 
-    if args.magento:
-        magento_file = local.backup_magento()
-        #upload dos novos backups
-        if not magento_file:
-           local.upload(magento_file)
+       # Backup dos arquivos
+       if args.mysql:
+           mysql_file   = local.backup_mysql()
+           # upload dos novos backups
+           if mysql_file:
+              local.upload(mysql_file)
 
-    # limpa os arquivos de cache e tmps
-    local.coletor_lixo()
+       if args.magento:
+           magento_file = local.backup_magento()
+           #upload dos novos backups
+           if not magento_file:
+              local.upload(magento_file)
+
+       # limpa os arquivos de cache e tmps
+       local.coletor_lixo()
+
+       #Gera a lista de arquivos
+       local.lista()
     return True
 
 if __name__ == "__main__":
     args=params()
     if not main(args):
-    # if not main(params())
         print("problema na execucao do script, verifique os logs")
         sys.exit(-1)
