@@ -1,6 +1,6 @@
 # Backup do Magento em Google Drive
 
-Esse script foi escrito para resolver um problema pessoal de backup automatizado no google Driver. Fique a vontade para reportar problemas ou melhorá-lo.
+Esse script foi escrito para resolver um problema pessoal de backup automatizado no google Drive. Fique a vontade para reportar problemas ou melhorá-lo.
 
 Basicamente o script faz a compactação dos arquivos de banco de dados e do sistema e envia para o gdrive. Também existe a possibilidade de manter o backup local. 
 
