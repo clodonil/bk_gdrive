@@ -2,7 +2,7 @@ admin:
    email: email@localhost
    secret_google: secrets.json
    gdrive_dir: Magento-Backup
-   log: logs/backupMagento.log
+   log: /backup/logs/
 mysql:
    host: localhost
    user: root
@@ -19,4 +19,4 @@ backup:
    mysql_rotation: 10 
    magento_rotation: 10
    storage_local: True
-   storage: storage/
+   storage: /storage/

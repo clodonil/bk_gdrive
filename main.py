@@ -21,6 +21,13 @@ def params():
     parser.add_argument('--lista', action='store_true', dest = 'lista',
                                                    default = False, required = False,
                                                    help = 'Lista os arquivos armazenados.')
+
+    parser.add_argument('--config', dest = 'config',
+                                                   default = '/etc/bk_magento_gdrive/', required = False,
+                                                   help = 'path do caminho de configuracao.')
+
+
+
     args = parser.parse_args()
 
     # Verificar se um parametro pelo menos foi passado
@@ -34,7 +41,7 @@ def main(args):
     '''
        Modulo principal
     '''
-    local    = Backup_Magento()
+    local    = Backup_Magento(args.config)
 
     # lista todos os arquivos
     if args.lista:

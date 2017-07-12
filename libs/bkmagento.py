@@ -19,12 +19,13 @@ import os
 
 
 class Backup_Magento():
-    def __init__(self):
+    def __init__(self,path):
         '''
              Carga dos arquivos de configurcao
         '''
+        filename="{0}/{1}".format(path,'config.yaml')
         try:
-          with open('config.yaml', 'r') as f:
+          with open(filename, 'r') as f:
                self.params = yaml.load(f)
         except:
                print('Erro no arquivo de configuracao (config.yaml)')
@@ -39,7 +40,7 @@ class Backup_Magento():
         self.logger.setLevel(logging.INFO)
 
         # create a file handler
-        handler = logging.FileHandler(self.params['admin']['log'])
+        handler = logging.FileHandler(self.params['admin']['log']+ "backupMagento.log")
         handler.setLevel(logging.INFO)
 
         # create a logging format
@@ -58,9 +59,10 @@ class Backup_Magento():
           Verifica se o diretorios basicos existem
         '''
         dirs = []
-        dirs.append(self.params['admin']['log'].split("/")[0])
+        dirs.append(self.params['admin']['log'])
         dirs.append(self.params['backup']['storage'])
         for dir in dirs:
+            print(dir)
             if not os.path.exists(dir):
                os.makedirs(dir)
 
@@ -145,7 +147,7 @@ class Backup_Magento():
         '''
         service = self.gdrive_connect() 
         try:
-            status = open(self.params['admin']['list_file'],'w')
+            status = open(self.params['admin']['log']+'lista_de_arquivos.log','w')
             (gdrive_magfile,gdrive_myfile,f_magento,f_mysql) = self.gdrive_list_file(service)
             status.write("{0}\n".format("-"*100))
             status.write("\tLISTA DE ARQUIVOS DE BACKUP\n")

@@ -42,7 +42,7 @@ admin:
    email: email@localhost 
    secret_google: secrets.json
    gdrive_dir: Magento-Backup
-   log: logs/backupMagento.log
+   log: /etc/bk_magento_gdrive/
 mysql:
    host: localhost
    user: root
@@ -55,26 +55,65 @@ backup:
    mysql_rotation: 10
    magento_rotation: 10
    storage_local: True
-   storage: storage/
+   storage: /storage/
 ```
 As principais linhas de configuração são:
   * **email**: *E-Mail que vai ter acesso aos arquivos de backup* 
   * **secret_google**: *Nome do arquivo json criado no google Api*
   * **gdrive_dir**: *Nome da pasta criado no google para armazenar os backups*
-  * **log**: *log da aplicação*
+  * **log**: *Diretório para publicação dos logs da aplicação*
   * **path**: *Diretório do armazenamento do magento*
   * **mysql_rotation**: *Quantidade de arquivos mantidos de Mysql*
   * **magento_rotation**: *Quantidade de arquivos mantidos de magento*
   * **storage_local**: *True para manter o backup local ou False para manter apenas no google*
   * **storage**: *Diretório para manter os backups locais*
 
+### Treinando
+Antes de colocar o script no piloto automático é importante testar para verificar se todas as etapas estão sendo executadas corretamente.
+Assumindo que as credenciais do google e o arquivo config.yaml foram criados, execute as seguintes etapas.
+Por padrão o script vai buscar o arquivo config.yam e as credencias do google no diretório /etc/bk_magento_gdrive, se você não utilizou esse path, utilize o parâmetro --config na execução do script para especificar o path que contem os arquivo referido.
 
+Antes de começar os testes é importante conhecer todos os parâmetros que o script aceita.
+
+```html
+usage: main.py [-h] [--magento] [--mysql] [--lista] [--config CONFIG]
+
+Script de Backup do Magento no GDrive.
+
+optional arguments:
+  -h, --help       show this help message and exit
+  --magento        Coloque essa opcao para fazer backup do magento.
+  --mysql          Coloque essa opcao para fazer backup do Mysql.
+  --lista          Lista os arquivos armazenados.
+  --config CONFIG  path do caminho de configuracao.
+```
+
+1. Validando a conexão 
+O primeiro e o mais importante teste para ser feito é validar a conexão com o gdrive. Para isso execute o script com a opção --lista. 
+```html
+$ python main.py --lista
+```
+Olhe os logs a procura de erros.
+
+2. Ajustando a execução
+Para não precisar utilizar o interpretador python explicitamente como mostrado no exemplo anterior, adicione o caminho do python na primeira linha do script main.py. Conforme o exemplo abaixo.
+```html
+#!/usr/bin/python
+import sys
+from libs.bkmagento import Backup_Magento
+import argparse
+....
+```
+Atribua permissão de execução para o script.
+```html
+$ chmod +x main.py
+```
 ### Crontab
 Para o backup ser automatizado adicione as seguintes linhas no crontab
 ```html
-# Backup diário do mysql
-0 5  * * *  /opt/bk_magento/main.py --mysql
-# Backup semanal do Magento
+# Backup diário do mysql passando o caminho do config.yaml
+0 5  * * *  /opt/bk_magento/main.py --mysql --config /backup/ 
+# Backup semanal do Magento, lendo o arquivo config.yaml no diretório padrão /etc/bk_magento_gdrive
 0 5 1  * * /opt/bk_magento/main.py --magento
 # Backup diário do Mysql e Magento
 0 5 * * * /opt/bk_magento/main.py --mysql --magento
