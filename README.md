@@ -70,8 +70,9 @@ As principais linhas de configuração são:
 
 ### Treinando
 Antes de colocar o script no piloto automático é importante testar para verificar se todas as etapas estão sendo executadas corretamente.
-Assumindo que as credenciais do google e o arquivo config.yaml foram criados, execute as seguintes etapas.
-Por padrão o script vai buscar o arquivo config.yam e as credencias do google no diretório /etc/bk_magento_gdrive, se você não utilizou esse path, utilize o parâmetro --config na execução do script para especificar o path que contem os arquivo referido.
+Assumindo que as credenciais do google e o arquivo config.yaml foram criados.
+
+Por padrão o script vai buscar o arquivo config.yaml e as credencias do google no diretório /etc/bk_magento_gdrive, se você não utilizou esse path, utilize o parâmetro --config na execução do script para especificar o path correto.
 
 Antes de começar os testes é importante conhecer todos os parâmetros que o script aceita.
 
