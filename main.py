@@ -1,5 +1,6 @@
 import sys
-from libs.bkmagento import Backup_Magento
+from libs.BkApp import Backup_App
+from libs.AppException import *
 import argparse
 
 '''
@@ -41,7 +42,7 @@ def main(args):
     '''
        Modulo principal
     '''
-    local    = Backup_Magento(args.config)
+    local    = Backup_App(args.config)
 
     # lista todos os arquivos
     if args.lista:
@@ -76,6 +77,10 @@ def main(args):
 
 if __name__ == "__main__":
     args=params()
-    if not main(args):
-        print("problema na execucao do script, verifique os logs")
-        sys.exit(-1)
+
+    try:
+      main(args)
+    except AppException as e:
+         print(e.msg)
+         exit(e.code)
+    exit(0)

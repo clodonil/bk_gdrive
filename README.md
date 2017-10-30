@@ -1,4 +1,4 @@
-# Backup do Magento em Google Drive
+# Backup do App em Google Drive
 
 Esse script foi escrito para resolver um problema pessoal de backup automatizado no google Drive. Fique a vontade para reportar problemas ou melhorá-lo.
 
