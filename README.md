@@ -12,11 +12,11 @@ O script controla/rotaciona a quantidade de arquivos de backup.
 A instalação do script é bastante simples. Primeiramente clone o projeto do github:
 
 ```bash
-$ git clone https://github.com/clodonil/bk_magento_gdrive/
+$ git clone https://github.com/clodonil/bk_gdrive/
 ```
 Entre no diretório criado e instale as dependências:
 ```bash
-$ cd bk_magento_gdrive/
+$ cd bk_gdrive/
 $ pip install -r requirements
 ```
 
@@ -78,7 +78,7 @@ As principais linhas de configuração são:
 Antes de colocar o script no piloto automático é importante testar para verificar se todas as etapas estão sendo executadas corretamente.
 Assumindo que as credenciais do google e o arquivo config.yaml foram criados.
 
-Por padrão o script vai buscar o arquivo config.yaml e as credencias do google no diretório /etc/bk_magento_gdrive, se você não utilizou esse path, utilize o parâmetro --config na execução do script para especificar o path correto.
+Por padrão o script vai buscar o arquivo config.yaml e as credencias do google no diretório /etc/bk_gdrive, se você não utilizou esse path, utilize o parâmetro --config na execução do script para especificar o path correto.
 
 Antes de começar os testes é importante conhecer todos os parâmetros que o script aceita.
 
@@ -89,13 +89,14 @@ Script de Backup do Magento no GDrive.
 
 optional arguments:
   -h, --help       show this help message and exit
-  --app            Coloque essa opcao para fazer backup da aplicação.
-  --db             Coloque essa opcao para fazer backup do banco de dados (Mysql).
+  --app            Coloque essa opção para fazer backup da aplicação.
+  --db             Coloque essa opção para fazer backup do banco de dados (Mysql).
   --lista          Lista os arquivos armazenados.
   --config CONFIG  path do caminho de configuracao.
 ```
 
 1. Validando a conexão 
+
 O primeiro e o mais importante teste para ser feito é validar a conexão com o gdrive. Para isso execute o script com a opção --lista. 
 ```html
 $ python main.py --lista
@@ -103,6 +104,7 @@ $ python main.py --lista
 Olhe os logs a procura de erros.
 
 2. Ajustando a execução
+
 Para não precisar utilizar o interpretador python explicitamente como mostrado no exemplo anterior, adicione o caminho do python na primeira linha do script main.py. Conforme o exemplo abaixo.
 ```html
 #!/usr/bin/python
@@ -119,11 +121,11 @@ $ chmod +x main.py
 Para o backup ser automatizado adicione as seguintes linhas no crontab
 ```html
 # Backup diário do mysql passando o caminho do config.yaml
-0 5  * * *  /opt/bk_magento/main.py --db --config /backup/ 
-# Backup semanal do Magento, lendo o arquivo config.yaml no diretório padrão /etc/bk_magento_gdrive
-0 5 1  * * /opt/bk_magento/main.py --app
+0 5  * * *  /opt/bk_gdrive/main.py --db --config /opt/bk_gdrive/config.yaml 
+# Backup semanal do Magento, lendo o arquivo config.yaml no diretório padrão /etc/bk_gdrive
+0 5 1  * * /opt/bk_gdrive/main.py --app
 # Backup diário do Mysql e Magento
-0 5 * * * /opt/bk_magento/main.py --db --app
+0 5 * * * /opt/bk_gdrive/main.py --db --app
 ```
 ## Licence
 
