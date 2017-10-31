@@ -11,28 +11,28 @@ import argparse
 # Carga de parametros
 def params():
     parser = argparse.ArgumentParser(description = 'Script de Backup do Magento no GDrive.')
-    parser.add_argument('--magento', action='store_true', dest = 'magento',
+    parser.add_argument('--app', action='store_true', dest = 'app',
                                                    default = False, required = False,
-                                                   help = 'Coloque essa opcao para fazer backup do magento.')
+                                                   help = 'Coloque essa opcao para fazer backup da aplicacao.')
 
-    parser.add_argument('--mysql', action='store_true', dest = 'mysql',
+    parser.add_argument('--db', action='store_true', dest = 'db',
                                                    default = False, required = False,
-                                                   help = 'Coloque essa opcao para fazer backup do Mysql.')
+                                                   help = 'Coloque essa opcao para fazer backup do Banco de Dados.')
 
     parser.add_argument('--lista', action='store_true', dest = 'lista',
                                                    default = False, required = False,
                                                    help = 'Lista os arquivos armazenados.')
 
     parser.add_argument('--config', dest = 'config',
-                                                   default = '/etc/bk_magento_gdrive/', required = False,
-                                                   help = 'path do caminho de configuracao.')
+                                                   default = '/etc/bk_magento_gdrive/config.yaml', required = False,
+                                                   help = 'path do caminho de configuracao (config.yaml).')
 
 
 
     args = parser.parse_args()
 
     # Verificar se um parametro pelo menos foi passado
-    if not args.lista and not args.magento and not args.mysql:
+    if not args.lista and not args.app and not args.db:
        parser.print_help()
        sys.exit(1)
 
@@ -56,17 +56,17 @@ def main(args):
           return False
 
        # Backup dos arquivos
-       if args.mysql:
-           mysql_file   = local.backup_mysql()
+       if args.db:
+           db_file   = local.backup_mysql()
            # upload dos novos backups
-           if mysql_file:
-              local.upload(mysql_file)
+           if db_file:
+              local.upload(db_file)
 
-       if args.magento:
-           magento_file = local.backup_magento()
+       if args.app:
+           filebackup = local.backup_app()
            #upload dos novos backups
-           if not magento_file:
-              local.upload(magento_file)
+           if filebackup:
+              local.upload(filebackup)
 
        # limpa os arquivos de cache e tmps
        local.coletor_lixo()
