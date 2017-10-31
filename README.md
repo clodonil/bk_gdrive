@@ -42,18 +42,21 @@ admin:
    email: email@localhost 
    secret_google: secrets.json
    gdrive_dir: Magento-Backup
-   log: /etc/bk_magento_gdrive/
-mysql:
+   logFile: /var/log/bk_gdrive.log
+   listaFile: /var/log/lista_arquivos_backup.log
+db:
    host: localhost
    user: root
    passwd: magento
    database: magento
    port: 3306
-magento:
-   path: /var/www/html/
+app:
+   name: lojax
+   path: /var/www/
+   path_exclude: /var/www/media/import, /var/www/var/cache
 backup:
-   mysql_rotation: 10
-   magento_rotation: 10
+   db_rotation: 10
+   app_rotation: 10
    storage_local: True
    storage: /storage/
 ```
@@ -61,10 +64,13 @@ As principais linhas de configuração são:
   * **email**: *E-Mail que vai ter acesso aos arquivos de backup* 
   * **secret_google**: *Nome do arquivo json criado no google Api*
   * **gdrive_dir**: *Nome da pasta criado no google para armazenar os backups*
-  * **log**: *Diretório para publicação dos logs da aplicação*
+  * **logFile**: *Diretório para publicação dos logs da aplicação*
+  * **listaFile**: *Lista de arquivos que estão no backup*
+  * **name**: *Nome da aplicação/sistema*
   * **path**: *Diretório do armazenamento do magento*
-  * **mysql_rotation**: *Quantidade de arquivos mantidos de Mysql*
-  * **magento_rotation**: *Quantidade de arquivos mantidos de magento*
+  * **path_exclude**: *Diretório ou arquivos que não serão incluidos no backup*
+  * **db_rotation**: *Quantidade de arquivos mantidos de Mysql*
+  * **app_rotation**: *Quantidade de arquivos mantidos de magento*
   * **storage_local**: *True para manter o backup local ou False para manter apenas no google*
   * **storage**: *Diretório para manter os backups locais*
 
@@ -77,14 +83,14 @@ Por padrão o script vai buscar o arquivo config.yaml e as credencias do google 
 Antes de começar os testes é importante conhecer todos os parâmetros que o script aceita.
 
 ```html
-usage: main.py [-h] [--magento] [--mysql] [--lista] [--config CONFIG]
+usage: main.py [-h] [--app] [--db] [--lista] [--config CONFIG]
 
 Script de Backup do Magento no GDrive.
 
 optional arguments:
   -h, --help       show this help message and exit
-  --magento        Coloque essa opcao para fazer backup do magento.
-  --mysql          Coloque essa opcao para fazer backup do Mysql.
+  --app            Coloque essa opcao para fazer backup da aplicação.
+  --db             Coloque essa opcao para fazer backup do banco de dados (Mysql).
   --lista          Lista os arquivos armazenados.
   --config CONFIG  path do caminho de configuracao.
 ```
@@ -113,11 +119,11 @@ $ chmod +x main.py
 Para o backup ser automatizado adicione as seguintes linhas no crontab
 ```html
 # Backup diário do mysql passando o caminho do config.yaml
-0 5  * * *  /opt/bk_magento/main.py --mysql --config /backup/ 
+0 5  * * *  /opt/bk_magento/main.py --db --config /backup/ 
 # Backup semanal do Magento, lendo o arquivo config.yaml no diretório padrão /etc/bk_magento_gdrive
-0 5 1  * * /opt/bk_magento/main.py --magento
+0 5 1  * * /opt/bk_magento/main.py --app
 # Backup diário do Mysql e Magento
-0 5 * * * /opt/bk_magento/main.py --mysql --magento
+0 5 * * * /opt/bk_magento/main.py --db --app
 ```
 ## Licence
 
