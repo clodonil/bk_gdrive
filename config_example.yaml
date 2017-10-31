@@ -2,19 +2,20 @@ admin:
    email_shared: email@localhost
    secret_google: secrets.json
    gdrive_dir: Magento-Backup
-   logFile: /backup/logs/bk_grive.log
+   logFile: /var/log/bk_grive.log
+   listaFile: /var/log/lista_de_arquivos_backup.log
 db:
-   
    host: localhost
    user: root
    passwd: magento
    database: magento
    port: 3306
 app:
+   name: lojax
    path: /var/www/html/
-   path_exclude: /var/www/html/var/cache
+   path_exclude: /var/www/media/import, /var/www/var/cache
 backup:
-   db_rotation: 10 
+   db_rotation: 10
    app_rotation: 10
    storage_local: True
    storage: /storage/
