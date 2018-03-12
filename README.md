@@ -24,7 +24,7 @@ $ git clone https://github.com/clodonil/bk_gdrive/
 ```
 Entre no diretório criado e instale as dependências:
 ```bash
-$ cd bk_gdrive/
+$ cd /etc/bk_gdrive/
 $ pip3 install -r requirements
 ```
 
