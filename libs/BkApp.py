@@ -27,9 +27,9 @@ class Backup_App():
         filename=path
         try:
           with open(filename, 'r') as f:
-               self.params = yaml.load(f)
+             self.params = yaml.load(f)
         except:
-               raise ErroObtendoDados(msg="Erro ao abriri o arquivo de configuracao: {tipo}", tipo="config.yaml")
+               raise ErroObtendoDados(msg="Problema para abrir o arquivo de configuracao: {tipo}", tipo="config.yaml")
 
         # criando os diretorios
         self.checkdir()
@@ -169,23 +169,23 @@ class Backup_App():
         '''
         service = self.gdrive_connect() 
         #service.messages.send(
-        message = (service.messages().send('clodonil@nisled.org', body='teste').execute())
-        try:
-           status = open(self.params['admin']['listaFile'],'w')
-           (gdrive_magfile,gdrive_myfile,files_app,files_db) = self.gdrive_list_file(service)
-           status.write("{0}\n".format("-"*100))
-           status.write("\tLISTA DE ARQUIVOS DE BACKUP\n")
-           status.write("{0}\n".format("-"*100))
-           for files in files_app:
-               status.write("\t{0}\n".format(files['name']))
+        #message = (service.messages().send(self.params['admin']['email_shared'], body='Lista de arquivos de backup').execute())
+        #try:
+        status = open(self.params['admin']['listaFile'],'w')
+        (gdrive_magfile,gdrive_myfile,files_app,files_db) = self.gdrive_list_file(service)
+        status.write("{0}\n".format("-"*100))
+        status.write("\tLISTA DE ARQUIVOS DE BACKUP\n")
+        status.write("{0}\n".format("-"*100))
+        for files in files_app:
+            status.write("\t{0}\n".format(files['name']))
 
-           for files in files_db:
-               status.write("\t{0}\n".format(files['name']))
-           status.write("{0}\n".format("-"*100))
-           self.log("Lista de arquivos criado: {0}".format(self.params['admin']['listaFile']))
-        except:
-            raise ErroObtendoDados(msg="Impossivel obter a lista de arquivos do gdrive")
-            self.log("Erro ao criar lista de arquivos")
+        for files in files_db:
+            status.write("\t{0}\n".format(files['name']))
+        status.write("{0}\n".format("-"*100))
+        self.log("Lista de arquivos criado: {0}".format(self.params['admin']['listaFile']))
+        #except:
+        #    raise ErroObtendoDados(msg="Impossivel obter a lista de arquivos do gdrive")
+        #    self.log("Erro ao criar lista de arquivos")
 
     def gdrive_list_file(self,service):
         '''

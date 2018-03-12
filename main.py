@@ -24,7 +24,7 @@ def params():
                                                    help = 'Lista os arquivos armazenados.')
 
     parser.add_argument('--config', dest = 'config',
-                                                   default = '/etc/bk_magento_gdrive/config.yaml', required = False,
+                                                   default = '/etc/bk_gdrive/config.yaml', required = False,
                                                    help = 'path do caminho de configuracao (config.yaml).')
 
 
