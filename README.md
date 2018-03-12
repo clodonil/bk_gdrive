@@ -9,7 +9,15 @@ O script controla/rotaciona a quantidade de arquivos de backup.
 [![Screen Shot](http://www.devops-sys.com.br/screenshot/bkmagento1.jpg)](http://www.devops-sys.com.br/screenshot/bkmagento1.jpg)
 
 ## Instalação
-A instalação do script é bastante simples. Primeiramente clone o projeto do github:
+A instalação do script é bastante simples. É preciso ter instalado no servidor o python3.4 e o pip3.
+ 
+```bash
+$ yum install -y python34
+$ wget  https://bootstrap.pypa.io/get-pip.py 
+$ python3 get-pip 
+```
+
+Primeiramente clone o projeto do github:
 
 ```bash
 $ git clone https://github.com/clodonil/bk_gdrive/
@@ -17,7 +25,7 @@ $ git clone https://github.com/clodonil/bk_gdrive/
 Entre no diretório criado e instale as dependências:
 ```bash
 $ cd bk_gdrive/
-$ pip install -r requirements
+$ pip3 install -r requirements
 ```
 
 ## Criar a conta de Serviço do Google
@@ -99,7 +107,7 @@ optional arguments:
 
 O primeiro e o mais importante teste para ser feito é validar a conexão com o gdrive. Para isso execute o script com a opção --lista. 
 ```html
-$ python main.py --lista
+$ python3 main.py --lista
 ```
 Olhe os logs a procura de erros.
 
@@ -107,7 +115,7 @@ Olhe os logs a procura de erros.
 
 Para não precisar utilizar o interpretador python explicitamente como mostrado no exemplo anterior, adicione o caminho do python na primeira linha do script main.py. Conforme o exemplo abaixo.
 ```html
-#!/usr/bin/python
+#!/usr/bin/python3
 import sys
 from libs.bkmagento import Backup_Magento
 import argparse
@@ -121,11 +129,11 @@ $ chmod +x main.py
 Para o backup ser automatizado adicione as seguintes linhas no crontab
 ```html
 # Backup diário do mysql passando o caminho do config.yaml
-0 5  * * *  /opt/bk_gdrive/main.py --db --config /opt/bk_gdrive/config.yaml 
+0 5  * * *  /etc/bk_gdrive/main.py --db --config /opt/bk_gdrive/config.yaml 
 # Backup semanal do Magento, lendo o arquivo config.yaml no diretório padrão /etc/bk_gdrive
-0 5 1  * * /opt/bk_gdrive/main.py --app
+0 5 1  * * /etc/bk_gdrive/main.py --app
 # Backup diário do Mysql e Magento
-0 5 * * * /opt/bk_gdrive/main.py --db --app
+0 5 * * * /etc/bk_gdrive/main.py --db --app
 ```
 ## Licence
 

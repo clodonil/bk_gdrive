@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import sys
 from libs.BkApp import Backup_App
 from libs.AppException import *
