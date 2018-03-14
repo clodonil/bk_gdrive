@@ -104,25 +104,27 @@ class Backup_App():
         data          = datetime.datetime.now().strftime("%d-%m-%Y")
         filename      = self.params['backup']['storage'] + 'sys_' + self.params['app']['name'] +'-'+  data + '.tar.gz'
         path          = self.params['app']['path']
-        exclude_files = self.params['app']['path_exclude']
 
-        try:
-           tar = tarfile.open(filename, "w:gz")
-           tar.add(path,filter=exclude_files)
-           tar.close()
-           return filename
-        except:
-           self.log('Erro ao realizar a compactacao do app')
-           raise ErroAoProcessar(msg="Erro ao compactar arquivo de aplicacao")
+        #try:
+        tar = tarfile.open(filename, "w:gz")
+        tar.add(path,filter=self.exclude_files)
+        tar.close()
+        return filename
+        #except:
+        #   self.log('Erro ao realizar a compactacao do app')
+        #   raise ErroAoProcessar(msg="Erro ao compactar arquivo de aplicacao")
 
     def exclude_files(self,tarinfo):
         '''
           Verificar se o arquivo da aplicacao nao vai ser incluido no tar
         '''
-        path_exclude =  self.params['app']['path_exclude'].split(',')
-
+        path_exclude = []
         retorno  = tarinfo
         filename = tarinfo.name
+
+        if not isinstance(self.params['app']['path_exclude'],type(None)):
+           path_exclude =  self.params['app']['path_exclude'].split(',')
+ 
 
         for path in path_exclude:
             normalize     = path.replace('/','')
