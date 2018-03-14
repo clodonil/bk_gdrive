@@ -101,13 +101,14 @@ class Backup_App():
         '''
           Backup da pasta do magento, considerando que esta na maquina local
         '''
-        data     = datetime.datetime.now().strftime("%d-%m-%Y")
-        filename = self.params['backup']['storage'] + 'sys_' + self.params['app']['name'] +'-'+  data + '.tar.gz'
-        path     = self.params['app']['path']
+        data          = datetime.datetime.now().strftime("%d-%m-%Y")
+        filename      = self.params['backup']['storage'] + 'sys_' + self.params['app']['name'] +'-'+  data + '.tar.gz'
+        path          = self.params['app']['path']
+        exclude_files = self.params['app']['path_exclude']
 
         try:
            tar = tarfile.open(filename, "w:gz")
-           tar.add(path,filter=self.exclude_files)
+           tar.add(path,filter=exclude_files)
            tar.close()
            return filename
         except:
