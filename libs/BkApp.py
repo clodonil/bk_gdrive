@@ -155,7 +155,12 @@ class Backup_App():
         '''
           Conecta no servico do google drive
         '''
-        KEY_FILE_NAME = self.params['admin']['secret_google']
+        if len(self.params['admin']['secret_google'].split('/')) == 1:
+            token = "/etc/bk_gdrive/{0}".format(self.params['admin']['secret_google'])
+        else:
+            token = self.params['admin']['secret_google']         
+
+        KEY_FILE_NAME = token
         SCOPES = 'https://www.googleapis.com/auth/drive'
         try:
            credentials = ServiceAccountCredentials.from_json_keyfile_name(filename=KEY_FILE_NAME, scopes=SCOPES)
@@ -163,7 +168,7 @@ class Backup_App():
            service     = discovery.build(serviceName="drive", version="v3", credentials=credentials)
            return service
         except:
-           raise ErroAoComunicarComServidor(msg="Erro ao comunicar com o google Api")
+           raise ErroAoComunicarComServidor(msg="Erro ao comunicar com o google Api, verifique o arquivo config.yaml")
            self.log('error ao conectar no google, verifique o arquivo de chave e as permissao do google')
 
     def lista(self):
